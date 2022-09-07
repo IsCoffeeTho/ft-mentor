@@ -54,11 +54,18 @@ class cwapi
 			}
 			else
 			{
-				fetch(`/app/${newlocation.replace(/^\//g, "")}`).then((data) => {
+				fetch(`/raw${newlocation.replace(/^\//g, "")}`).then((data) => {
 					if (Math.floor(data.status / 100) == 2)
 					{
 						data.text().then((resp) => {
-							document.body.innerHTML = resp;
+							document.body.innerHTML = resp.replace(/\{\{\s*([^}]+)\s*\}\}/g, (m, s) => {
+								switch (s)
+								{
+									case "intra:user": return ("marvin");
+									case "intra:campus": return ("42fr");
+									default: return "";
+								}
+							});
 							res(data.status);
 						}).catch((reason) => {
 							rej(reason);

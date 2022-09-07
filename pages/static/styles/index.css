@@ -2,6 +2,16 @@ body {
 	background: var(--theme-background);
 	color : var(--theme-foreground);
 	font-family: var(--theme-font);
+	padding : 0px;
+	margin : 0px;
+}
+
+a {
+	color : var(--theme-accent);
+}
+
+a:visited {
+	color : var(--theme-accent);
 }
 
 bar {
@@ -23,6 +33,65 @@ middle {
 	top : 50%;
 	left : 50%;
 	transform: translate(-50%, -50%);
+	text-align: center;
 	align-items: center;
 	flex-direction: column;
+}
+
+panel
+{
+	display : grid;
+	grid-template-areas: "header header" "bar workspace";
+	grid-template-columns: calc(300px * var(--sidebar)) calc(100% - (300px * var(--sidebar)));
+	grid-template-rows: 80px 100%;
+}
+
+div[header] {
+	grid-area: header;
+	background-color : var(--theme-background);
+	display: flex;
+	align-items: center;
+	flex-direction: row;
+	padding : 0px;
+	z-index : 2;
+}
+
+div[header]>span {
+	display: flex;
+	align-items: center;
+	flex-direction: row;
+}
+
+div[header]>span>* {
+	margin : 10px;
+}
+
+footer {
+	display: flex;
+	position : absolute;
+	bottom : 0%;
+	left : 50%;
+	transform: translate(-50%, 0);
+	align-items: center;
+	flex-direction: row;
+	padding : 0px;
+}
+
+footer>* {
+	margin : 10px;
+}
+
+div[workspace] {
+	grid-area: workspace;
+	background-color: var(--theme-foreground);
+}
+
+button {
+	padding : 10px;
+	padding-inline : 15px;
+	font-family: var(--theme-font);
+	border : none;
+	background-color: var(--theme-accent);
+	color : var(--theme-foreground);
+	font-weight: bold;
 }

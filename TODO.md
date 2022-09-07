@@ -1,6 +1,5 @@
 # To Do
 
-1. Verify an auth token is valid before allowing auth to continue.
 1. Designing standard interface for panel.
 1. Design tools.
 1. Adjust Styling for design tools.
