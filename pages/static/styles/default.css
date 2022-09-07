@@ -1,0 +1,10 @@
+@import url("https://use.typekit.net/hyk8orl.css");
+
+:root {
+	--theme-background : #090718;
+	--theme-foreground : #fff;
+	--theme-accent : #04809f;
+	--theme-sec-accent : #000;
+
+	--theme-font : futura-pt, sans-serif;
+}

@@ -1,0 +1,28 @@
+body {
+	background: var(--theme-background);
+	color : var(--theme-foreground);
+	font-family: var(--theme-font);
+}
+
+bar {
+	display: block;
+	height : 5px;
+	width : 300px;
+	background : var(--theme-foreground);
+	transition : box-shadow 0.1s;
+	box-shadow: calc(300px * var(--lv)) 0px 0px inset var(--theme-accent);
+}
+
+h* {
+	font-weight : bold;
+}
+
+middle {
+	display: flex;
+	position : absolute;
+	top : 50%;
+	left : 50%;
+	transform: translate(-50%, -50%);
+	align-items: center;
+	flex-direction: column;
+}
