@@ -68,22 +68,30 @@ class web_worker extends EventEmitter
 		this.agent.get("/oauth/token", (i, o) => {
 			if (i.cookies['ft_intra_code'])
 			{
-				const form = new FormData();
 				const state = `${hash(`${Math.random()}${hash(new Date().toDateString())}${Math.random()}`)}`;
 
-				form.append("grant_type", `authorization_code`);
-				form.append("client_id", `${process.env['ft_client_id']}`);
-				form.append("client_secret", `${process.env['ft_client_secret']}`);
-				form.append("code", `${i.cookies['ft_intra_code']}`);
-				form.append("redirect_uri", `${i.headers['x-forwarded-proto'] || i.protocol}://${i.headers['host']}/oauth/code`);
-				form.append("state", `${state}`);
+				const form = {
+					"grant_type": `authorization_code`,
+					"client_id": `${process.env['ft_client_id']}`,
+					"client_secret": `${process.env['ft_client_secret']}`,
+					"code": `${i.cookies['ft_intra_code']}`,
+					"redirect_uri": `${i.headers['x-forwarded-proto'] || i.protocol}://${i.headers['host']}/oauth/code`,
+					"state": `${state}`
+				}
 
-				// form.forEach((v, k) => {
-				// 	console.log(`${k}: ${v}`)
-				// });
+				var formstr = "";
+
+				for (var entry in form) {
+					formstr += `&${entry}=${form[entry]}`;
+				};
+			
 				fetch("https://api.intra.42.fr/oauth/token",{
 					method: 'POST',
-					body: form
+					headers:
+					{
+						"Content-Type": "multipart/form-data"
+					},
+					body: formstr.slice(1)
 				}).then((response) => {
 					response.json().then((data) => {
 						if (data['error'])
@@ -118,7 +126,7 @@ class web_worker extends EventEmitter
 						}
 					}).catch((reason) => {
 						console.log("parse:", reason);
-						o.redirect("/oauth/err?code=DEV_SKILL_DIFF");
+						o.redirect("/oauth/err?code=BAD_FORMAT");
 					});
 				}).catch((err) => {
 					console.log("fetch:", err);
