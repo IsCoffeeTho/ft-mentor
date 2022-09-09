@@ -1,25 +1,23 @@
 {
-  "name": "mentor-panel",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "start": "node instance.js",
-    "setup": "export PORT=3000",
-    "test": "node unit-tests.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/IsCoffeeTho/42MentorPanel.git"
-  },
-  "author": "IsCofeeTho",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/IsCoffeeTho/42MentorPanel/issues"
-  },
-  "homepage": "https://github.com/IsCoffeeTho/42MentorPanel#readme",
-  "dependencies": {
-    "cookie-parser": "^1.4.6",
-    "express": "^4.18.1"
-  }
+	"name": "mentor-panel",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"start": "node instance.js"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/IsCoffeeTho/42MentorPanel.git"
+	},
+	"author": "IsCofeeTho",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/IsCoffeeTho/42MentorPanel/issues"
+	},
+	"homepage": "https://github.com/IsCoffeeTho/42MentorPanel#readme",
+	"dependencies": {
+		"cookie-parser": "^1.4.6",
+		"express": "^4.18.1"
+	}
 }

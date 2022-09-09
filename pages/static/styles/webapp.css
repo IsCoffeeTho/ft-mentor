@@ -1,0 +1,80 @@
+div[panel] {
+	position : absolute;
+	top : 0px;
+	left : 0px;
+	bottom : 0px;
+	right : 0px;
+	display : flex;
+}
+
+#sidebar {
+	width : 15em;
+	background-color : var(--theme-background);
+	display : flex;
+	flex-direction : column;
+	align-items : center;
+	padding : 10px;
+}
+
+#sidebar>span[details] {
+	display : flex;
+	flex-direction : column;
+	align-items : center;
+	margin : 10px;
+}
+
+#sidebar>span[details]>* {
+	margin : 0px;
+}
+
+#sidebar>span>button {
+	width : 100%;
+}
+
+#workspace {
+	width : calc(100vw - 15em);
+	background-color : var(--theme-foreground);
+	color : var(--theme-background);
+	padding : 0px;
+	display : flex;
+	flex-direction : column;
+}
+
+#workspace>* {
+	display : flex;
+	flex-direction : column;
+}
+
+#header {
+	display : flex;
+	flex-direction : column;
+	background-color : var(--theme-background);
+	color : var(--theme-foreground);
+	padding : 20px;
+}
+
+#beta-warn {
+	display : flex;
+	flex-direction : column;
+	padding : 20px;
+	font-size: 0.8em;
+}
+
+#segment {
+	border : 1px solid var(--theme-accent);
+	margin : 20px;
+	padding : 20px;
+	display : flex;
+	flex-direction : column;
+}
+
+#segment>* {
+	display : flex;
+	flex-direction : row;
+	align-items: center;
+	justify-content: space-between;
+}
+
+h1 {
+	margin : 0px;
+}

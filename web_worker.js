@@ -205,6 +205,39 @@ class web_worker extends EventEmitter
 			});
 		});
 
+		this.agent.get("/panel/err", (req, res) => {
+			const params = new URLSearchParams(req.originalUrl.slice(req.originalUrl.indexOf("?")));
+			var errorResponse = {};
+			switch (params.get("code"))
+			{
+				case "UNAUTHORISED":
+					errorResponse = {
+						err: "UNAUTHORISED",
+						message: `You haven't been assigned as a mentor for your campus`
+					};
+					break;
+				default:
+					errorResponse = {
+						err: "UNKNOWN",
+						message: `The err code provided is invalid. Please open an issue`
+					};
+					break;
+			}
+			fs.readFile(`${this.directory}oauth/err.html`, (err, data) => {
+				if (!err)
+					res.send(data.toString().replace(/\{\{\s*([^}]+)\s*\}\}/g, (m, s) => {
+						switch (s)
+						{
+							case "err:code": return (errorResponse.err || "DEV_SKILL_DIFF");
+							case "err:message": return (errorResponse.message || "If you are seeing this, glhf!")
+							default: return "";
+						}
+					}));
+				else
+					o.status(500).type("text/plain").send(`500 Internal Server ERR: ${err.code}`);
+			});
+		});
+
 		this.agent.get("/raw/*", (req, res) => {
 			var url = req.originalUrl.replace(/\?.*$/g, "").replace(/^\/app/g, "");
 			fs.readFile(`${this.directory}${pageDict[url]}`, (err, data) => {
@@ -243,7 +276,7 @@ class web_worker extends EventEmitter
 											switch (s)
 											{
 												case "intra:user": return ("marvin");
-												case "intra:campus": return ("42fr");
+												case "intra:campus": return ("42 Paris");
 												default: return "";
 											}
 										})
