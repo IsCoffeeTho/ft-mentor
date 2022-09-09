@@ -12,23 +12,25 @@ div[panel] {
 	background-color : var(--theme-background);
 	display : flex;
 	flex-direction : column;
-	align-items : center;
-	padding : 10px;
+	align-items : stretch;
+	padding : 0px;
 }
 
-#sidebar>span[details] {
+#sidebar>#details {
 	display : flex;
 	flex-direction : column;
 	align-items : center;
-	margin : 10px;
+	margin : 20px;
 }
 
-#sidebar>span[details]>* {
+#sidebar>#details>* {
 	margin : 0px;
 }
 
-#sidebar>span>button {
-	width : 100%;
+#sidebar>#nav {
+	display: flex;
+	align-items: stretch;
+	flex-direction: column;
 }
 
 #workspace {
@@ -48,7 +50,7 @@ div[panel] {
 #header {
 	display : flex;
 	flex-direction : column;
-	background-color : var(--theme-background);
+	background-color : var(--theme-variant);
 	color : var(--theme-foreground);
 	padding : 20px;
 }
