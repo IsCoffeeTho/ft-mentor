@@ -110,7 +110,7 @@ class web_worker extends EventEmitter
 						*/
 					}
 				}).catch((err) => {
-					console.log("fetch:", err);
+					console.log("axios:", err);
 					o.redirect("/oauth/err?code=DEV_SKILL_DIFF");
 				});
 			}
