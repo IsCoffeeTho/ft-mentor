@@ -1,5 +1,6 @@
 const hash = require("./hash");
 const pageDict = require("./page-dict.json");
+const axios = require('axios').default;
 const express = require("express");
 const cookieParser = require('cookie-parser')
 const fs = require("fs");
@@ -69,65 +70,45 @@ class web_worker extends EventEmitter
 			if (i.cookies['ft_intra_code'])
 			{
 				const state = `${hash(`${Math.random()}${hash(new Date().toDateString())}${Math.random()}`)}`;
-
-				const form = {
+			
+				axios.post("https://api.intra.42.fr/oauth/token", {
 					"grant_type": `authorization_code`,
 					"client_id": `${process.env['ft_client_id']}`,
 					"client_secret": `${process.env['ft_client_secret']}`,
 					"code": `${i.cookies['ft_intra_code']}`,
 					"redirect_uri": `${i.headers['x-forwarded-proto'] || i.protocol}://${i.headers['host']}/oauth/code`,
 					"state": `${state}`
-				}
-
-				var formstr = "";
-
-				for (var entry in form) {
-					formstr += `&${entry}=${form[entry]}`;
-				};
-			
-				fetch("https://api.intra.42.fr/oauth/token",{
-					method: 'POST',
-					headers:
+				}).then((data) => {
+					if (data['error'])
 					{
-						"Content-Type": "multipart/form-data"
-					},
-					body: formstr.slice(1)
-				}).then((response) => {
-					response.json().then((data) => {
-						if (data['error'])
+						o.clearCookie("ft_intra_code");
+						switch (data['error'])
 						{
-							o.clearCookie("ft_intra_code");
-							switch (data['error'])
-							{
-								case "invalid_grant":
-									o.redirect("/oauth/err?code=INVALID_GRANT");
-									break;
-								default:
-									o.redirect("/oauth/err?code=DEV_SKILL_DIFF");
-									break;
-							}
+							case "invalid_grant":
+								o.redirect("/oauth/err?code=INVALID_GRANT");
+								break;
+							default:
+								o.redirect("/oauth/err?code=DEV_SKILL_DIFF");
+								break;
+						}
+					}
+					else
+					{
+						o.redirect("/panel");
+						/*
+
+						// There is a problem with the API where the state is not accompanied with the response so we are skipping it untill it's fixed
+
+						if (data['state'] == state)
+						{
+							o.redirect("/oauth/err?code=DEV_SKILL_DIFF");
 						}
 						else
 						{
-							o.redirect("/panel");
-							/*
-
-							// There is a problem with the API where the state is not accompanied with the response so we are skipping it untill it's fixed
-
-							if (data['state'] == state)
-							{
-								o.redirect("/oauth/err?code=DEV_SKILL_DIFF");
-							}
-							else
-							{
-								o.redirect("/oauth/err?code=BAD_STATE");
-							}
-							*/
+							o.redirect("/oauth/err?code=BAD_STATE");
 						}
-					}).catch((reason) => {
-						console.log("parse:", reason);
-						o.redirect("/oauth/err?code=BAD_FORMAT");
-					});
+						*/
+					}
 				}).catch((err) => {
 					console.log("fetch:", err);
 					o.redirect("/oauth/err?code=DEV_SKILL_DIFF");
