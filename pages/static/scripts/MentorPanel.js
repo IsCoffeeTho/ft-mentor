@@ -83,6 +83,19 @@ class cwapi
 			}
 		});
 	}
+
+	rollAuth()
+	{
+		return new Promise((res, rej) => {
+			rej();
+		});
+	}
 }
 
 const app = new cwapi();
+
+app.rollAuth().then(() => {
+
+}).catch((err) => {
+	window.location.href = "/panel/err?code=BAD_AUTH";
+});

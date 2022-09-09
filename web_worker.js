@@ -174,7 +174,7 @@ class web_worker extends EventEmitter
 								.replace(/(https:\/\/[^ ]+)/g, (m, l) => {
 									return `<a href="${l}">${l}</a>`;
 								});
-							case "err:issue": return (errorResponse.allowIssue ? `<a href="https://github.com/IsCoffeeTho/ft-mentor/issues/new?title=${params.get("code")}"><button>Open Issue</button></a>` : "");
+							case "err:issue": return (errorResponse.allowIssue ? `<a href="https://github.com/IsCoffeeTho/ft-mentor/issues/new?title=${params.get("code")}+while+logging+in"><button>Open Issue</button></a>` : "");
 							case "err:retry": return (errorResponse.allowRetry ? `<a href="/login"><button>Retry Login</button></a>` : "");
 							default: return "";
 						}
@@ -202,13 +202,15 @@ class web_worker extends EventEmitter
 				case "UNAUTHORISED":
 					errorResponse = {
 						err: "UNAUTHORISED",
-						message: `You haven't been assigned as a mentor for your campus`
+						message: `You haven't been assigned as a mentor for your campus`,
+						allowIssue: false
 					};
 					break;
 				default:
 					errorResponse = {
 						err: "UNKNOWN",
-						message: `The err code provided is invalid. Please open an issue`
+						message: `The err code provided is invalid. Please open an issue`,
+						allowIssue: true
 					};
 					break;
 			}
@@ -219,6 +221,7 @@ class web_worker extends EventEmitter
 						{
 							case "err:code": return (errorResponse.err || "DEV_SKILL_DIFF");
 							case "err:message": return (errorResponse.message || "If you are seeing this, glhf!")
+							case "err:issue": return (errorResponse.allowIssue ? `<a href="https://github.com/IsCoffeeTho/ft-mentor/issues/new?title=${params.get("code")}+after+logging+in"><button>Open Issue</button></a>` : "");
 							default: return "";
 						}
 					}));
