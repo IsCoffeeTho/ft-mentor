@@ -1,4 +1,5 @@
 const hash = require("./hash");
+const user = require("./user.js");
 const pageDict = require("./page-dict.json");
 const axios = require('axios').default;
 const express = require("express");
@@ -59,9 +60,7 @@ class web_worker extends EventEmitter
 					o.status(200).cookie("ft_intra_code", params.get("code")).redirect("/oauth/token");
 				}
 				else
-				{
 					o.status(401).redirect("/oauth/err?code=UNAUTHORISED");
-				}
 			}
 			else
 				o.redirect("/oauth/err?code=BAD_STATE");
@@ -78,40 +77,41 @@ class web_worker extends EventEmitter
 					"code": `${i.cookies['ft_intra_code']}`,
 					"redirect_uri": `${i.headers['x-forwarded-proto'] || i.protocol}://${i.headers['host']}/oauth/code`,
 					"state": `${state}`
-				}).then((data) => {
-					if (data['error'])
+				}).then((resp) => {
+					if (resp.error)
 					{
+						console.log(resp.error);
 						o.clearCookie("ft_intra_code");
 						switch (data['error'])
 						{
 							case "invalid_grant":
-								o.redirect("/oauth/err?code=INVALID_GRANT");
+								o.redirect(`/oauth/err?code=INVALID_GRANT`);
 								break;
 							default:
-								o.redirect("/oauth/err?code=DEV_SKILL_DIFF");
+								o.redirect(`/oauth/err?code=DEV_SKILL_DIFF`);
 								break;
 						}
 					}
 					else
 					{
-						o.redirect("/panel");
-						/*
-
-						// There is a problem with the API where the state is not accompanied with the response so we are skipping it untill it's fixed
-
-						if (data['state'] == state)
-						{
-							o.redirect("/oauth/err?code=DEV_SKILL_DIFF");
-						}
-						else
-						{
-							o.redirect("/oauth/err?code=BAD_STATE");
-						}
+						/*	search: custom_flow
+							BEGIN CUSTOM AUTH FLOW
 						*/
+						axios.get("https://api.intra.42.fr/v2/me", {
+							headers: {
+								"Authorization" : `Bearer ${resp.data['access_token']}`
+							}
+						}).then((usrsp) => {
+							console.log(usrsp.data);
+							o.redirect("/panel");
+						}).catch((err) => {
+							console.log(usrsp.err);
+							o.redirect("/panel");
+						});
 					}
 				}).catch((err) => {
-					console.log("axios:", err);
-					o.redirect("/oauth/err?code=DEV_SKILL_DIFF");
+					console.log("axios:", err.message);
+					o.redirect(`/oauth/err?code=DEV_SKILL_DIFF`);
 				});
 			}
 			else

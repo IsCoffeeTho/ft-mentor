@@ -1,5 +1,6 @@
 {
 	"/": "init.html",
 	"/panel": "panel/index.html",
-	"/tool/test": "panel/test-tool.html"
+	"/tool/test": "panel/test-tool.html",
+	"/design/test": "des-test.html"
 }

@@ -1,0 +1,25 @@
+@import url("https://use.typekit.net/hyk8orl.css");
+
+:root {
+	--theme-dark : #292d39;
+	--theme-light : #fff;
+	--theme-sec : #00babc;
+	
+	--theme-font : futura-pt, sans-serif;
+}
+
+*[ft_logo] {
+	height : 100px;
+}
+
+body {
+	font-family : var(--theme-font);
+}
+
+h1 { font-size: 40px; }
+h2 { font-size: 32px; }
+h3 { font-size: 28px; }
+h4 { font-size: 20px; }
+h5 { font-size: 18px; }
+h6 { font-size: 18px; font-style: oblique; font-weight: 400;}
+

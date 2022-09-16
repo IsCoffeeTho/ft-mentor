@@ -1,6 +1,9 @@
 # To Do
 
-1. auth of students that aren't "MENTORS"
+1. Create User object.
+1. serialise and de-serialise user objects.
+
+
 1. Designing standard interface for panel.
 1. Design tools.
 1. Adjust Styling for design tools.
