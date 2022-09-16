@@ -1,7 +1,7 @@
 ---
 name: Beta Issue
 about: Tell us what went wrong
-title: 'Beta issue '
+title: 'Beta Issue: '
 labels: bug
 assignees: ''
 
