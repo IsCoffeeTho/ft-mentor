@@ -1,6 +1,6 @@
 class cookies
 {
-	static setCookie(cname, cvalue, exdays)
+	static set(cname, cvalue, exdays)
 	{
 		const d = new Date();
 		d.setTime(d.getTime() + (exdays*24*60*60*1000));
@@ -8,7 +8,7 @@ class cookies
 		document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
 	}
 
-	static getCookie(cname)
+	static get(cname, defaultvalue)
 	{
 		let name = cname + "=";
 		let decodedCookie = decodeURIComponent(document.cookie);
@@ -21,7 +21,7 @@ class cookies
 			if (c.indexOf(name) == 0)
 				return c.substring(name.length, c.length);
 		}
-		return "";
+		return defaultvalue || null;
 	}
 }
 
@@ -29,6 +29,7 @@ class cwapi
 {	
 	constructor()
 	{
+		this.user = {};
 		console.debug("[CWAPI] Initialising application");
 		window.onpopstate = (event) => {
 			console.debug(`[CWAPI] page back action, navigating to ${document.location.pathname}`);
@@ -87,7 +88,28 @@ class cwapi
 	rollAuth()
 	{
 		return new Promise((res, rej) => {
-			rej();
+			const auth = cookies.get("ft_intra_code");
+			if (auth)
+			{
+				fetch("https://api.intra.42.fr/v2/me", {
+					method: 'GET',
+					headers: {
+						"Authorization": `Bearer ${auth}`
+					}
+				}).then((resp) => {
+					resp.json().then((data) => {
+						res();
+					}).catch((err) => {
+						console.log(err);
+						res();
+					});
+				}).catch((err) => {
+					console.log(err);
+					res();
+				})
+			}
+			else
+				rej();
 		});
 	}
 }
