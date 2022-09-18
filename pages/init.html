@@ -2,14 +2,17 @@
 <html>
 	<head>
 		<title>42 Mentor Panel</title>
-		<link rel="stylesheet" href="/static/styles/default.css" />
+		<link rel="stylesheet" href="/static/styles/ft-theme.css" />
+		<script type="module" src="/static/styles/ft-theme-utils.js"></script>
 		<link rel="stylesheet" href="/static/styles/index.css" />
 	</head>
-	<body>
-		<middle>
-			<h1><img ico src="/static/assets/42_logo.png" alt="42 "/> MENTOR PANEL</h1>
-			<a href="/login"><button>Log In with Intra</button></a>
-		</middle>
+	<body class="page-dark">
+		<center absolute>
+			<ft-logo>
+				<img logo src="/static/assets/42_logo.png" alt="42"/><span>MENTOR PANEL</span>
+			</ft-logo>
+			<a href="/login"><button class="btn-prim">Log In with Intra</button></a>
+		</center>
 		<footer>
 			<span>Written by <a href="https://github.com/IsCoffeeTho/ft-mentor">IsCoffeeTho</a></span>
 		</footer>

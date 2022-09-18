@@ -49,6 +49,15 @@ class web_worker extends EventEmitter
 				.redirect(`https://api.intra.42.fr/oauth/authorize?${params.toString()}`);
 		});
 
+		this.agent.get("/design/test", (i, o) => {
+			fs.readFile(`${this.directory}des-test.html`, (err, data) => {
+				if (!err)
+					o.send(data.toString());
+				else
+					o.status(500).type("text/plain").send(`500 Internal Server ERR: ${err.code}`);
+			});
+		});
+
 		this.agent.get("/oauth", (i, o) => {o.redirect("/");});
 		this.agent.get("/oauth/code", (i, o) => {
 			const params = new URLSearchParams(i.originalUrl.slice(i.originalUrl.indexOf("?")));
@@ -267,6 +276,7 @@ class web_worker extends EventEmitter
 										.replace(/\{\{\s*([^}]+)\s*\}\}/g, (m, s) => {
 											switch (s)
 											{
+												case "intra:role": return ("MENTOR");
 												case "intra:user": return ("marvin");
 												case "intra:campus": return ("42 Paris");
 												default: return "";

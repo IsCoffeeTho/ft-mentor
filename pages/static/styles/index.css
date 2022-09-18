@@ -1,10 +1,19 @@
-middle {
+header {
 	display : flex;
+	justify-content: space-between;
+}
+
+center[absolute] {
 	position : absolute;
 	top : 50%;
 	left : 50%;
 	transform : translate(-50%, -50%);
-	text-align : center;
-	align-items : center;
-	flex-direction : column;
+}
+
+footer {
+	position : absolute;
+	bottom : 0px;
+	left : 50%;
+	transform: translate(-50%, 0px);
+	padding : 30px;
 }

@@ -117,7 +117,8 @@ class cwapi
 const app = new cwapi();
 
 app.rollAuth().then(() => {
-
+	
 }).catch((err) => {
-	window.location.href = "/panel/err?code=BAD_AUTH";
+	console.log(err);
+	//window.location.href = "/panel/err?code=BAD_AUTH";
 });

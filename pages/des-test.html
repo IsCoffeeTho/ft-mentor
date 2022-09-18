@@ -4,17 +4,94 @@
 		<title>42 Mentor Panel</title>
 		<link rel="stylesheet" href="/static/styles/ft-theme.css" />
 		<link rel="stylesheet" href="/static/styles/index.css" />
+		<script type="module" src="/static/styles/ft-theme-utils.js"></script>
 	</head>
 	<body>
-		<middle>
-			<img ft_logo src="/static/assets/42_logo.png" alt="42"/>
-			<h1>Header 1</h1>
-			<h2>Header 2</h2>
-			<h3>Header 3</h3>
-			<h4>Header 4</h4>
-			<h5>Header 5</h5>
-			<h6>Header 6</h6>
-			<button class=""></button>
-		</middle>
+		<header>
+			<section></section>
+			<section>
+				<ft-logo>
+					<img logo dark src="/static/assets/42_logo.png" alt="42"/><span>DESIGN TEST</span>
+				</ft-logo>
+			</section>
+			<section></section>
+		</header>
+		<center>
+			<h1>Heading 1 - 40px</h1>
+			<h2>Heading 2 - 32px</h2>
+			<h3>Heading 3 - 28px</h3>
+			<h4>Heading 4 - 20px</h4>
+			<h5>Heading 5 - 18px</h5>
+			<h6>Heading 6 - 18px book oblique</h6>
+			<hr />
+			<h4>BUTTONS</h4>
+			<section display>
+				<button class="btn-prim">PRIMARY</button>
+				<button class="btn-sec">SECONDARY</button>
+				<button class="btn-OK">SUCCESS</button>
+				<button class="btn-KO">DANGER</button>
+				<button class="btn-warn">WARNING</button>
+				<button class="btn-info">INFO</button>
+				<button class="btn-light">LIGHT</button>
+				<button class="btn-dark">DARK</button>
+				<a href="#">Link</a>
+			</section>
+			<h5>BUTTON TAGS</h5>
+			<section display>
+				<button class="btn-prim">LINK</button>
+				<button class="btn-prim">BUTTON</button>
+				<button class="btn-prim">INPUT</button>
+				<button class="btn-prim">SUBMIT</button>
+				<button class="btn-prim">RESET</button>
+			</section>
+			<h5>OUTLINE BUTTONS</h5>
+			<section display>
+				<button class="btn-prim-outline">PRIMARY</button>
+				<button class="btn-sec-outline">SECONDARY</button>
+				<button class="btn-OK-outline">SUCCESS</button>
+				<button class="btn-KO-outline">DANGER</button>
+				<button class="btn-warn-outline">WARNING</button>
+				<button class="btn-info-outline">INFO</button>
+				<button class="btn-light-outline">LIGHT</button>
+				<button class="btn-dark-outline">DARK</button>
+			</section>
+			<h5>DISABLED STATE</h5>
+			<section display>
+				<button class="btn-prim" disabled>PRIMARY</button>
+				<button class="btn-sec" disabled>SECONDARY</button>
+				<button class="btn-OK" disabled>SUCCESS</button>
+				<button class="btn-KO" disabled>DANGER</button>
+				<button class="btn-warn" disabled>WARNING</button>
+				<button class="btn-info" disabled>INFO</button>
+				<button class="btn-light" disabled>LIGHT</button>
+				<button class="btn-dark" disabled>DARK</button>
+			</section>
+			<h5>CHECKBOX AND RADIO BUTTONS</h5>
+			<h6>CHECKBOXES</h6>
+			<section display>
+				<button class="btn-check" value="true" checkable checked>ALPHA</button>
+				<button class="btn-check" value="false" checkable>BRAVO</button>
+				<button class="btn-check" value="false" checkable>CHARLIE</button>
+			</section>
+			<h6>RADIO</h6>
+			<section display>
+				<radio value="one">
+					<option value="one" checked>XRAY</option>
+					<option value="two">YANKEE</option>
+					<option value="three">ZULU</option>
+				</radio>
+			</section>
+			<h5>DROPDOWNS</h5>
+			<section display>
+				<dropdown>
+					<button class="btn-prim">DROPDOWN BUTTON</button>
+					<options>
+						<option value="lorem">Lorem</option>
+						<option value="ipsum_dolor">Ipsum dolor</option>
+						<option value="sit_amet">Sit amet</option>
+					</options>
+				</dropdown>
+			</section>
+		</center>
 	</body>
 </html>

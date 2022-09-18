@@ -18,7 +18,8 @@ div[panel] {
 
 #sidebar {
 	width : 15em;
-	background-color : var(--theme-background);
+	background-color : var(--theme-dark);
+	color : var(--theme-light);
 	display : flex;
 	flex-direction : column;
 	align-items : stretch;
@@ -42,6 +43,13 @@ div[panel] {
 	flex-direction: column;
 }
 
+#sidebar>#nav>* {
+	display: flex;
+	align-items: stretch;
+	flex-direction: column;
+	margin-bottom : 1px;
+}
+
 #workspace {
 	width : calc(100vw - 15em);
 	background-color : var(--theme-foreground);
@@ -59,9 +67,9 @@ div[panel] {
 #header {
 	display : flex;
 	flex-direction : column;
-	background-color : var(--theme-variant);
-	color : var(--theme-foreground);
 	padding : 20px;
+	background-color: var(--theme-sec);
+	color: var(--theme-light);
 }
 
 #beta-warn {
@@ -72,7 +80,7 @@ div[panel] {
 }
 
 #segment {
-	border : 1px solid var(--theme-accent);
+	border : 1px solid var(--theme-sec);
 	margin : 20px;
 	padding : 20px;
 	display : flex;
