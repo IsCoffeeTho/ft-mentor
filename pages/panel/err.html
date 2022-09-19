@@ -2,15 +2,16 @@
 <html>
 	<head>
 		<title>42 Mentor Panel</title>
-		<link rel="stylesheet" href="/static/styles/default.css" />
+		<link rel="stylesheet" href="/static/styles/ft-theme.css" />
 		<link rel="stylesheet" href="/static/styles/index.css" />
+		<script type="module" src="/static/styles/ft-theme-utils.js"></script>
 	</head>
-	<body>
-		<middle>
+	<body class="page-dark">
+		<center absolute>
 			<h1>INTRA ERROR</h1>
 			<h3>CODE: {{err:code}}</h3>
 			<p>{{err:message}}</p>
 			{{err:issue}}
-		</middle>
+		</center>
 	</body>
 </html>

@@ -18,7 +18,7 @@ class user
 	}
 
 	/** Will return a boolean of if the credentials match the user and is valid*/
-	static login(user, credentials)
+	static login()
 	{
 
 	}

@@ -59,14 +59,7 @@ class cwapi
 					if (Math.floor(data.status / 100) == 2)
 					{
 						data.text().then((resp) => {
-							document.body.innerHTML = resp.replace(/\{\{\s*([^}]+)\s*\}\}/g, (m, s) => {
-								switch (s)
-								{
-									case "intra:user": return ("marvin");
-									case "intra:campus": return ("42fr");
-									default: return "";
-								}
-							});
+							document.body.innerHTML = resp;
 							res(data.status);
 						}).catch((reason) => {
 							rej(reason);
@@ -84,41 +77,6 @@ class cwapi
 			}
 		});
 	}
-
-	rollAuth()
-	{
-		return new Promise((res, rej) => {
-			const auth = cookies.get("ft_intra_code");
-			if (auth)
-			{
-				fetch("https://api.intra.42.fr/v2/me", {
-					method: 'GET',
-					headers: {
-						"Authorization": `Bearer ${auth}`
-					}
-				}).then((resp) => {
-					resp.json().then((data) => {
-						res();
-					}).catch((err) => {
-						console.log(err);
-						res();
-					});
-				}).catch((err) => {
-					console.log(err);
-					res();
-				})
-			}
-			else
-				rej();
-		});
-	}
 }
 
 const app = new cwapi();
-
-app.rollAuth().then(() => {
-	
-}).catch((err) => {
-	console.log(err);
-	//window.location.href = "/panel/err?code=BAD_AUTH";
-});

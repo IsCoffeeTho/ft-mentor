@@ -219,6 +219,18 @@ a[nl] {
 	color: var(--theme-int-dark-back);
 }
 
+.btn-profile {
+	min-width : 80px;
+	height : 80px;
+	border-radius: 40px;
+	background-position: center;
+	background-size: cover;
+}
+
+.profile-add {
+	background-image : url('/static/assets/add.png');
+}
+
 button[disabled] {
 	cursor : default;
 	opacity: 0.4;
@@ -284,9 +296,11 @@ dropdown>button:focus::after {
 
 dropdown>options {
 	position : absolute;
+	margin-top : 37px;
 	min-width: 100px;
 	display: none;
 	flex-direction: column;
+	background-color : var(--theme-light);
 	border : 1px solid var(--theme-sec);
 	padding-block : 10px;
 }

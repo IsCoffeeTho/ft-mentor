@@ -1,6 +1,7 @@
 const hash = require("./hash");
-const user = require("./user.js");
+const auth = require("./authorise.js");
 const pageDict = require("./page-dict.json");
+const pageDictPermissed = require("./page-dict-permissed.json");
 const axios = require('axios').default;
 const express = require("express");
 const cookieParser = require('cookie-parser')
@@ -103,19 +104,16 @@ class web_worker extends EventEmitter
 					}
 					else
 					{
-						/*	search: custom_flow
-							BEGIN CUSTOM AUTH FLOW
-						*/
+						o.cookie("ft_intra_auth", resp.data['access_token']);
 						axios.get("https://api.intra.42.fr/v2/me", {
 							headers: {
 								"Authorization" : `Bearer ${resp.data['access_token']}`
 							}
 						}).then((usrsp) => {
-							console.log(usrsp.data);
 							o.redirect("/panel");
 						}).catch((err) => {
-							console.log(usrsp.err);
-							o.redirect("/panel");
+							console.log(err);
+							o.redirect("/panel/err?code=BAD_AUTH");
 						});
 					}
 				}).catch((err) => {
@@ -183,8 +181,8 @@ class web_worker extends EventEmitter
 								.replace(/(https:\/\/[^ ]+)/g, (m, l) => {
 									return `<a href="${l}">${l}</a>`;
 								});
-							case "err:issue": return (errorResponse.allowIssue ? `<a href="https://github.com/IsCoffeeTho/ft-mentor/issues/new?title=${params.get("code")}+while+logging+in"><button>Open Issue</button></a>` : "");
-							case "err:retry": return (errorResponse.allowRetry ? `<a href="/login"><button>Retry Login</button></a>` : "");
+							case "err:issue": return (errorResponse.allowIssue ? `<a href="https://github.com/IsCoffeeTho/ft-mentor/issues/new?title=${params.get("code")}+while+logging+in"><button class="btn-KO">Open Issue</button></a>` : "");
+							case "err:retry": return (errorResponse.allowRetry ? `<a href="/login"><button class="btn-prim">Retry Login</button></a>` : "");
 							default: return "";
 						}
 					}));
@@ -223,14 +221,14 @@ class web_worker extends EventEmitter
 					};
 					break;
 			}
-			fs.readFile(`${this.directory}oauth/err.html`, (err, data) => {
+			fs.readFile(`${this.directory}panel/err.html`, (err, data) => {
 				if (!err)
 					res.send(data.toString().replace(/\{\{\s*([^}]+)\s*\}\}/g, (m, s) => {
 						switch (s)
 						{
 							case "err:code": return (errorResponse.err || "DEV_SKILL_DIFF");
 							case "err:message": return (errorResponse.message || "If you are seeing this, glhf!")
-							case "err:issue": return (errorResponse.allowIssue ? `<a href="https://github.com/IsCoffeeTho/ft-mentor/issues/new?title=${params.get("code")}+after+logging+in"><button>Open Issue</button></a>` : "");
+							case "err:issue": return (errorResponse.allowIssue ? `<a href="https://github.com/IsCoffeeTho/ft-mentor/issues/new?title=${params.get("code")}+after+logging+in"><button class="btn-KO">Open Issue</button></a>` : "");
 							default: return "";
 						}
 					}));
@@ -238,55 +236,44 @@ class web_worker extends EventEmitter
 					o.status(500).type("text/plain").send(`500 Internal Server ERR: ${err.code}`);
 			});
 		});
-
-		this.agent.get("/raw/*", (req, res) => {
-			var url = req.originalUrl.replace(/\?.*$/g, "").replace(/^\/app/g, "");
-			fs.readFile(`${this.directory}${pageDict[url]}`, (err, data) => {
-				if (!err)
-				{
-					res.send(data.toString());
-				}
-				else
-				{
-					if (err.code == "ENOENT")
-					{
-						res.status(404).sendFile(`${this.directory}404.html`, (err) => {
-							if (err)
-								res.status(500).type("text/plain").send(`500 Internal Server ERR: ${err.code}`);
-						});
-					}
-					else
-						res.status(500).type("text/plain").send(`500 Internal Server ERR: ${err.code}`);
-				}
-			});
-		});
-
 		this.agent.get("/*", (req, res) => {
 			var url = req.originalUrl.replace(/\?.*$/g, "");
 			fs.readFile(`${this.directory}wrapper.html`, (err, wrp) => {
 				if (!err)
 				{
-					if (pageDict[url])
+					if (typeof pageDict[url] == "string" || typeof pageDictPermissed[url] == "string")
 					{
-						fs.readFile(`${this.directory}${pageDict[req.originalUrl.replace(/\?.*$/g, "")]}`, (err, data) => {
-							if (!err)
-							{
-								res.send(wrp.toString()
-									.replace("{{page}}", data.toString()
+						var userobj = {};
+						axios.get("https://api.intra.42.fr/v2/me", {
+							headers: {
+								"Authorization" : `Bearer ${req.cookies['ft_intra_auth']}`
+							}
+						}).then((usrsp) => {
+							userobj = new auth(usrsp.data);
+							if (typeof pageDictPermissed[url] == "string" && !userobj.isBocal())
+								return res.redirect("/panel/err?code=BAD_PERMS");
+								var url = req.originalUrl.replace(/\?.*$/g, "");
+								var reloc = pageDict[url] || pageDictPermissed[url];
+							fs.readFile(`${this.directory}${reloc}`, (err, data) => {
+								if (!err)
+								{
+									res.send(wrp.toString().replace("{{page}}", data.toString()
 										.replace(/\{\{\s*([^}]+)\s*\}\}/g, (m, s) => {
 											switch (s)
 											{
 												case "intra:role": return ("MENTOR");
-												case "intra:user": return ("marvin");
-												case "intra:campus": return ("42 Paris");
+												case "intra:user": return (`${userobj.login}`);
+												case "intra:campus": return (`${userobj.campus.name}`);
 												default: return "";
 											}
 										})
-									)
-								);
-							}
-							else
-								res.status(500).send(`500 Internal Server Error: ${err.code}`);
+									));
+								}
+								else
+									res.status(500).send(`500 Internal Server Error: ${err.code}`);
+							});
+						}).catch((err) => {
+							res.redirect("/panel/err?code=BAD_AUTH");
 						});
 					}
 					else
