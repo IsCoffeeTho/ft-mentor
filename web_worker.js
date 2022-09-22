@@ -1,5 +1,5 @@
 const hash = require("./hash");
-const internalAPI = require("./authorise.js");
+const internalAPI = require("./internalAPI.js");
 const pageDict = require("./page-dict.json");
 const axios = require('axios').default;
 const express = require("express");
@@ -20,28 +20,55 @@ class pageLookup {
 			if ((rcsdt ? rcsdt.lookup : pageDict)[currpath])
 			{
 				var currRes = (rcsdt ? rcsdt.lookup : pageDict)[currpath]
-				if (typeof currRes == 'string' && currpath == path)
-					return {
-						file: currRes,
-						reqPerms: (currRes.reqPerms ? currRes.reqPerms : (rcsdt ? rcsdt.reqPerms : 0)) || 0
-					};
-				else (typeof currRes == 'object')
+				if (((currRes.type ? currRes.type : (rcsdt ? rcsdt.type : "page")) || "page") == "document")
 				{
-					if (currpath.length == path.length && typeof currRes['/'] == 'string')
+					if (currpath.length == path.length && typeof currRes['src'] == 'string')
 						return {
-							file: currRes['/'],
-							reqPerms: (currRes.reqPerms ? currRes.reqPerms : (rcsdt ? rcsdt.reqPerms : 0)) || 0
+							file: currRes['src'],
+							reqPerms: (currRes.reqPerms ? currRes.reqPerms : (rcsdt ? rcsdt.reqPerms : 0)) || 0,
+							type: (currRes.type ? currRes.type : (rcsdt ? rcsdt.type : "page")) || "page",
+							title: (currRes.title ? currRes.title : (rcsdt ? rcsdt.title : "Document")) || "Document"
 						};
 					else
 					{
 						return this.get(path.slice(currpath.length),
 							{
 								lookup: currRes,
-								reqPerms: (currRes.reqPerms ? currRes.reqPerms : (rcsdt ? rcsdt.reqPerms : 0)) || 0
+								reqPerms: (currRes.reqPerms ? currRes.reqPerms : (rcsdt ? rcsdt.reqPerms : 0)) || 0,
+								type: (currRes.type ? currRes.type : (rcsdt ? rcsdt.type : "page")) || "page",
+								title: (currRes.title ? currRes.title : (rcsdt ? rcsdt.title : "Document")) || "Document"
 							}
 						);
 					}
-				}	
+				}
+				else
+				{
+					if (typeof currRes == 'string' && currpath == path)
+						return {
+							file: currRes,
+							reqPerms: (currRes.reqPerms ? currRes.reqPerms : (rcsdt ? rcsdt.reqPerms : 0)) || 0,
+							type: (currRes.type ? currRes.type : (rcsdt ? rcsdt.type : "page")) || "page"
+						};
+					else (typeof currRes == 'object')
+					{
+						if (currpath.length == path.length && typeof currRes['/'] == 'string')
+							return {
+								file: currRes['/'],
+								reqPerms: (currRes.reqPerms ? currRes.reqPerms : (rcsdt ? rcsdt.reqPerms : 0)) || 0,
+								type: (currRes.type ? currRes.type : (rcsdt ? rcsdt.type : "page")) || "page"
+							};
+						else
+						{
+							return this.get(path.slice(currpath.length),
+								{
+									lookup: currRes,
+									reqPerms: (currRes.reqPerms ? currRes.reqPerms : (rcsdt ? rcsdt.reqPerms : 0)) || 0,
+									type: (currRes.type ? currRes.type : (rcsdt ? rcsdt.type : "page")) || "page"
+								}
+							);
+						}
+					}
+				}
 			}
 		}
 		return null;
@@ -153,8 +180,15 @@ class web_worker extends EventEmitter
 						o.cookie("ft_intra_auth", resp.data['access_token']);
 						seshint.createSession(resp.data['access_token']).then((sesh) => {
 							o.cookie("ft_session", sesh.id);
-							o.redirect("/panel");
+							if (i.cookies['ft_redirect'])
+							{
+								var rdrct = i.cookies['ft_redirect']
+								o.clearCookie("ft_redirect").redirect(rdrct);
+							}
+							else
+								o.redirect("/panel");
 						}).catch((err) => {
+							console.log(err);
 							o.redirect(`/oauth/err?code=${err.code}`);
 						});
 					}
@@ -300,26 +334,65 @@ class web_worker extends EventEmitter
 						{
 							if (sesh.user.permission >= lookup.reqPerms)
 							{
-								fs.readFile(`${this.directory}wrapper.html`, (err, wrp) => {
-									if (!err)
-									{
-										fs.readFile(`${this.directory}${lookup.file}`, (err, data) => {
-											if (err)
-												return res.status(500).type("text/plain").send(`500 Internal Server ERR: ${err.code}`)
-											res.status(200).cookie("ft_session", sesh.id).send(wrp.toString().replace("{{page}}", data.toString().replace(/\{\{\s{0,}([^}]+)\s{0,}\}\}/g, (m, g) => {
-												switch (g)
+								console.log(lookup.type);
+								if (lookup.type == "document")
+								{
+									fs.readFile(`${this.directory}wrapper.html`, (err, wrp) => {
+										if (!err)
+										{
+											fs.readFile(`${this.directory}resource-wrapper.html`, (err, scwrp) => {
+												if (!err)
 												{
-													case "intra:role": return `${sesh.user.role.toUpperCase()}`;
-													case "intra:user": return `${sesh.user.login}`;
-													case "intra:campus": return `${sesh.user.campus.name}`;
-													default: return "&nbsp;";
+													fs.readFile(`${this.directory}${lookup.file}`, (err, data) => {
+														if (err)
+															return res.status(500).type("text/plain").send(`500 Internal Server ERR: ${err.code}`)
+														res.status(200).cookie("ft_session", sesh.id).send(wrp.toString().replace("{{page}}", scwrp.toString().replace(/\{\{\s{0,}([^}]+)\s{0,}\}\}/g, (m, g) => {
+															switch (g)
+															{
+																case "intra:role": return `${sesh.user.role.toUpperCase()}`;
+																case "intra:user": return `${sesh.user.login}`;
+																case "intra:campus": return `${sesh.user.campus.name}`;
+																case "document": return `${data.toString()}`;
+																default: return "&nbsp;";
+															}
+														})));
+													});
 												}
-											})));
-										});
-									}
-									else
-										res.status().send(`500 Internal Server Error: ${err.code}`);
-								});
+												else
+													res.status().send(`500 Internal Server Error: ${err.code}`);
+											});
+										}
+										else
+											res.status().send(`500 Internal Server Error: ${err.code}`);
+									});
+								}
+								else if (lookup.type == "page")
+								{
+									fs.readFile(`${this.directory}wrapper.html`, (err, wrp) => {
+										if (!err)
+										{
+											fs.readFile(`${this.directory}${lookup.file}`, (err, data) => {
+												if (err)
+													return res.status(500).type("text/plain").send(`500 Internal Server ERR: ${err.code}`)
+												res.status(200).cookie("ft_session", sesh.id).send(wrp.toString().replace("{{page}}", data.toString().replace(/\{\{\s{0,}([^}]+)\s{0,}\}\}/g, (m, g) => {
+													switch (g)
+													{
+														case "intra:role": return `${sesh.user.role.toUpperCase()}`;
+														case "intra:user": return `${sesh.user.login}`;
+														case "intra:campus": return `${sesh.user.campus.name}`;
+														default: return "&nbsp;";
+													}
+												})));
+											});
+										}
+										else
+											res.status().send(`500 Internal Server Error: ${err.code}`);
+									});
+								}
+								else
+								{
+									res.redirect("/err?code=DEV_SKILL_DIFF");
+								}
 							}
 							else
 							{
@@ -330,35 +403,70 @@ class web_worker extends EventEmitter
 							}
 						}
 						else
-							res.redirect("/login");
+							res.cookie("ft_redirect", req.originalUrl).redirect("/login");
 					}
 					else
 					{
-						res.redirect("/login");
+						res.cookie("ft_redirect", req.originalUrl).redirect("/login");
 					}
 				}
 				else
 				{
-					fs.readFile(`${this.directory}wrapper.html`, (err, wrp) => {
-						if (!err)
-						{
-							fs.readFile(`${this.directory}${lookup.file}`, (err, data) => {
-								if (err)
-									return res.status(500).type("text/plain").send(`500 Internal Server ERR: ${err.code}`)
-								res.status(200).send(wrp.toString().replace("{{page}}", data.toString().replace(/\{\{\s{0,}([^}]+)\s{0,}\}\}/g, (m, g) => {
-									switch (g)
+					if (lookup.type == "document")
+					{
+						fs.readFile(`${this.directory}wrapper.html`, (err, wrp) => {
+							if (!err)
+							{
+								fs.readFile(`${this.directory}resource-wrapper.html`, (err, scwrp) => {
+									if (!err)
 									{
-										case "intra:role": return "STUDENT";
-										case "intra:user": return "marvin";
-										case "intra:campus": return "Paris";
-										default: return "&nbsp;";
+										fs.readFile(`${this.directory}${lookup.file}`, (err, data) => {
+											if (err)
+												return res.status(500).type("text/plain").send(`500 Internal Server ERR: ${err.code}`)
+											res.status(200).send(wrp.toString().replace("{{page}}", scwrp.toString().replace(/\{\{\s{0,}([^}]+)\s{0,}\}\}/g, (m, g) => {
+												switch (g)
+												{
+													case "intra:role": return `STUDENT`;
+													case "intra:user": return `marvin`;
+													case "intra:campus": return `Paris`;
+													case "title": return `${lookup.title}`;
+													case "document": return `${data.toString()}`;
+													default: return "&nbsp;";
+												}
+											})));
+										});
 									}
-								})));
-							});
-						}
-						else
-							res.status().send(`500 Internal Server Error: ${err.code}`);
-					});
+									else
+										res.status().send(`500 Internal Server Error: ${err.code}`);
+								});
+							}
+							else
+								res.status().send(`500 Internal Server Error: ${err.code}`);
+						});
+					}
+					else if (lookup.type == "page")
+					{
+						fs.readFile(`${this.directory}wrapper.html`, (err, wrp) => {
+							if (!err)
+							{
+								fs.readFile(`${this.directory}${lookup.file}`, (err, data) => {
+									if (err)
+										return res.status(500).type("text/plain").send(`500 Internal Server ERR: ${err.code}`)
+									res.status(200).send(wrp.toString().replace("{{page}}", data.toString().replace(/\{\{\s{0,}([^}]+)\s{0,}\}\}/g, (m, g) => {
+										switch (g)
+										{
+											case "intra:role": return `STUDENT`;
+											case "intra:user": return `marvin`;
+											case "intra:campus": return `Paris`;
+											default: return "&nbsp;";
+										}
+									})));
+								});
+							}
+							else
+								res.status().send(`500 Internal Server Error: ${err.code}`);
+						});
+					}
 				}
 			}
 			else

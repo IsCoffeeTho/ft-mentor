@@ -1,0 +1,50 @@
+<div fullscreen>
+	<div id="header">
+		<h3>ADD MENTOR</h3><input placeholder="Search Students..."/>
+	</div>
+	<div id="beta-warn">
+		<span>
+			<b>BETA WARNING</b>.
+			If you see a problem, please open an issue on github <a href="https://github.com/IsCoffeeTho/ft-mentor/issues/new/choose">https://github.com/IsCoffeeTho/ft-mentor/issues/new/choose</a>
+		</span>
+	</div>
+	<script>
+		function populate(campus, filter)
+		{
+			
+		}
+
+		function addUserToScreen(user)
+		{
+			if (document.getElementById("user-"+user))
+				return;
+			document.getElementById("list").innerHTML += document.getElementById("usercard-template").innerHTML.replace(/<!--\s{0,}(\w+)\s{0,}-->/g, (m, g) => {
+				switch (g)
+				{
+					case "user": return user;
+					default: return "";
+				}
+			})
+		}
+
+		function removeUserFromScreen(user)
+		{
+			if (!document.getElementById("user-"+user))
+				return;
+			document.getElementById("user-"+user).remove();
+		}
+
+		function clearScreen()
+		{
+			document.getElementById("list").innerHTML = "";
+		}
+	</script>
+	<script type="template" id="usercard-template">
+		<div class="user-card-mini" id="user-<!-- user -->" onclick="showDetails('<!-- user -->')">
+			<button class="btn-profile profile-add" style="background-image : url('https://cdn.intra.42.fr/users/<!-- user -->.jpg')"></button>
+			<!-- user -->
+		</div>
+	</script>
+	<div class="loi" id="list">
+	</div>
+</div>

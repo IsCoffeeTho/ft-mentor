@@ -16,6 +16,14 @@ div[panel] {
 	display : flex;
 }
 
+div[fullscreen] {
+	position : absolute;
+	top : 0px;
+	left : 0px;
+	bottom : 0px;
+	right : 0px;
+}
+
 #sidebar {
 	width : 15em;
 	background-color : var(--theme-dark);
@@ -66,11 +74,25 @@ div[panel] {
 
 #header {
 	display : flex;
-	flex-direction : column;
+	flex-direction : row;
 	padding : 20px;
 	background-color: var(--theme-sec);
 	color: var(--theme-light);
 }
+
+#header>input {
+	background-color: var(--theme-sec);
+	color: rgb(78, 85, 102);
+	border : 0px;
+	font-size : 20px;
+	margin : 10px;
+	font-family: var(--theme-font);
+}
+
+#header>input:focus {
+	outline : none;
+}
+
 
 #beta-warn {
 	display : flex;
@@ -96,4 +118,35 @@ div[panel] {
 
 h1 {
 	margin : 0px;
+}
+
+.loi {
+	padding : 15px;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	flex-wrap: wrap;
+}
+
+.user-card-mini {
+	cursor: pointer;
+	margin : 15px;
+	padding : 20px;
+	display: inline-flex;
+	background-color: var(--theme-sec);
+	flex-direction: column;
+	align-items: center;
+	border-radius : 10px;
+	box-shadow: 0px 0px 5px #0005;
+	color : var(--theme-light);
+}
+
+.user-card-mini>button {
+	margin : 10px;
+	box-shadow: 0px 0px 5px #000a;
+}
+
+.document {
+	width : 70%;
+	text-align: left;
 }

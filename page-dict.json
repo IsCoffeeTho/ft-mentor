@@ -10,5 +10,24 @@
 		"reqPerms": 2,
 		"/": "panel/bocal/index.html",
 		"/manage": "panel/bocal/manage.html"
+	},
+	"/roster":{
+		"reqPerms": 2,
+		"/add": "panel/bocal/studentselect.html"
+	},
+	"/resources" : {
+		"type": "document",
+		"title": "Resources",
+		"src": "resources/dir.md",
+		"/mentoring": {
+			"type": "document",
+			"title": "Mentoring",
+			"src": "resources/mentoring/dir.md",
+			"/mentalhealth" : {
+				"type": "document",
+				"title": "Mental Health",
+				"src": "resources/mentoring/mentalhealth.md"
+			}
+		}
 	}
 }

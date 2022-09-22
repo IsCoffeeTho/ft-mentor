@@ -121,6 +121,16 @@ class auth
 		}
 		return true;
 	}
+
+	toJSON()
+	{
+		return {
+			role: this.role,
+			permission: this.permission,
+			login: this.raw.login,
+			campus: this.raw.campus
+		}
+	}
 }
 
 class campus
