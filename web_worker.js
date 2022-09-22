@@ -79,6 +79,7 @@ class web_worker extends EventEmitter
 		});
 
 		this.agent.get("/favicon.ico", (req, res) => { res.sendFile(`${this.directory}static/favicon.ico`, (err) => {if(err){ res.status(404).send(); console.log(err); }}); });
+		this.agent.get("/embed.png", (req, res) => { res.sendFile(`${this.directory}embed.png`, (err) => {if(err){ res.status(404).send(); console.log(err); }}); });
 
 		this.agent.get("/login", (req, res) => {
 			// Get AuthCode
