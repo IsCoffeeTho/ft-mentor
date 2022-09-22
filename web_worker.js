@@ -20,7 +20,7 @@ class pageLookup {
 			if ((rcsdt ? rcsdt.lookup : pageDict)[currpath])
 			{
 				var currRes = (rcsdt ? rcsdt.lookup : pageDict)[currpath]
-				if (typeof currRes == 'string')
+				if (typeof currRes == 'string' && currpath == path)
 					return {
 						file: currRes,
 						reqPerms: (currRes.reqPerms ? currRes.reqPerms : (rcsdt ? rcsdt.reqPerms : 0)) || 0
