@@ -1,13 +1,52 @@
 const hash = require("./hash");
-const auth = require("./authorise.js");
+const internalAPI = require("./authorise.js");
 const pageDict = require("./page-dict.json");
-const pageDictPermissed = require("./page-dict-permissed.json");
 const axios = require('axios').default;
 const express = require("express");
 const cookieParser = require('cookie-parser')
 const fs = require("fs");
 const EventEmitter = require("events");
 const { URLSearchParams } = require("url");
+const { send } = require("process");
+
+const seshint = new internalAPI.sessions();
+
+class pageLookup {
+	static get(path, rcsdt)
+	{
+		for (var i = path.length; i > 0; i--)
+		{
+			var currpath = path.slice(0, i);
+			if ((rcsdt ? rcsdt.lookup : pageDict)[currpath])
+			{
+				var currRes = (rcsdt ? rcsdt.lookup : pageDict)[currpath]
+				if (typeof currRes == 'string')
+					return {
+						file: currRes,
+						reqPerms: (currRes.reqPerms ? currRes.reqPerms : (rcsdt ? rcsdt.reqPerms : 0)) || 0
+					};
+				else (typeof currRes == 'object')
+				{
+					if (currpath.length == path.length && typeof currRes['/'] == 'string')
+						return {
+							file: currRes['/'],
+							reqPerms: (currRes.reqPerms ? currRes.reqPerms : (rcsdt ? rcsdt.reqPerms : 0)) || 0
+						};
+					else
+					{
+						return this.get(path.slice(currpath.length),
+							{
+								lookup: currRes,
+								reqPerms: (currRes.reqPerms ? currRes.reqPerms : (rcsdt ? rcsdt.reqPerms : 0)) || 0
+							}
+						);
+					}
+				}	
+			}
+		}
+		return null;
+	}
+}
 
 class web_worker extends EventEmitter
 {
@@ -29,6 +68,12 @@ class web_worker extends EventEmitter
 		this.agent.get("*", (req, res, next) => {
 			if (req.headers['x-forwarded-proto'] == "http")
 				res.status(101).redirect(`https://${req.headers['host']}${req.originalUrl}`);
+			else if (req.path.length > 1 && req.path.at(-1) == "/")
+			{
+				var newret = req.originalUrl.split("");
+				newret.splice(req.path.length - 1, 1);
+				res.redirect(newret.join(""));
+			}
 			else
 				next();
 		});
@@ -105,15 +150,11 @@ class web_worker extends EventEmitter
 					else
 					{
 						o.cookie("ft_intra_auth", resp.data['access_token']);
-						axios.get("https://api.intra.42.fr/v2/me", {
-							headers: {
-								"Authorization" : `Bearer ${resp.data['access_token']}`
-							}
-						}).then((usrsp) => {
+						seshint.createSession(resp.data['access_token']).then((sesh) => {
+							o.cookie("ft_session", sesh.id);
 							o.redirect("/panel");
 						}).catch((err) => {
-							console.log(err);
-							o.redirect("/panel/err?code=BAD_AUTH");
+							o.redirect(`/oauth/err?code=${err.code}`);
 						});
 					}
 				}).catch((err) => {
@@ -190,25 +231,33 @@ class web_worker extends EventEmitter
 					o.status(500).type("text/plain").send(`500 Internal Server ERR: ${err.code}`);
 			});
 		});
+
 		this.agent.get("/oauth/*", (i, o) => {
 			o.redirect("/");
 		});
 
-		this.agent.get("/", (req, res) => {
-			res.status(404).sendFile(`${this.directory}init.html`, (err) => {
-				if (err)
-					res.status(500).type("text/plain").send(`500 Internal Server ERR: ${err.code}`);
-			});
-		});
-
-		this.agent.get("/panel/err", (req, res) => {
+		this.agent.get("/err", (req, res) => {
 			const params = new URLSearchParams(req.originalUrl.slice(req.originalUrl.indexOf("?")));
 			var errorResponse = {};
 			switch (params.get("code"))
 			{
-				case "UNAUTHORISED":
+				case "NOT_MENTOR":
 					errorResponse = {
-						err: "UNAUTHORISED",
+						err: "NOT_MENTOR",
+						message: `You lack the permissions to access this panel, check in with the bocal to add you to the mentor roster`,
+						allowIssue: false
+					};
+					break;
+				case "NOT_BOCAL":
+					errorResponse = {
+						err: "NOT_BOCAL",
+						message: `You must be bocal to access this panel`,
+						allowIssue: false
+					};
+					break;
+				case "BAD_PERMS":
+					errorResponse = {
+						err: "BAD_PERMS",
 						message: `You haven't been assigned as a mentor for your campus`,
 						allowIssue: false
 					};
@@ -236,57 +285,88 @@ class web_worker extends EventEmitter
 					o.status(500).type("text/plain").send(`500 Internal Server ERR: ${err.code}`);
 			});
 		});
-		this.agent.get("/*", (req, res) => {
-			var url = req.originalUrl.replace(/\?.*$/g, "");
-			fs.readFile(`${this.directory}wrapper.html`, (err, wrp) => {
-				if (!err)
+		this.agent.get("*", (req, res) => {
+			var url = req.path;
+			var lookup = pageLookup.get(url);
+			if (lookup)
+			{
+				if (lookup.reqPerms > 0)
 				{
-					if (typeof pageDict[url] == "string" || typeof pageDictPermissed[url] == "string")
+					if (req.cookies['ft_intra_auth'])
 					{
-						var userobj = {};
-						axios.get("https://api.intra.42.fr/v2/me", {
-							headers: {
-								"Authorization" : `Bearer ${req.cookies['ft_intra_auth']}`
+						var sesh = seshint.lookup(req.cookies['ft_session']);
+						if (sesh)
+						{
+							if (sesh.user.permission >= lookup.reqPerms)
+							{
+								fs.readFile(`${this.directory}wrapper.html`, (err, wrp) => {
+									if (!err)
+									{
+										fs.readFile(`${this.directory}${lookup.file}`, (err, data) => {
+											if (err)
+												return res.status(500).type("text/plain").send(`500 Internal Server ERR: ${err.code}`)
+											res.status(200).cookie("ft_session", sesh.id).send(wrp.toString().replace("{{page}}", data.toString().replace(/\{\{\s{0,}([^}]+)\s{0,}\}\}/g, (m, g) => {
+												switch (g)
+												{
+													case "intra:role": return `${sesh.user.role.toUpperCase()}`;
+													case "intra:user": return `${sesh.user.login}`;
+													case "intra:campus": return `${sesh.user.campus.name}`;
+													default: return "&nbsp;";
+												}
+											})));
+										});
+									}
+									else
+										res.status().send(`500 Internal Server Error: ${err.code}`);
+								});
 							}
-						}).then((usrsp) => {
-							userobj = new auth(usrsp.data);
-							if (typeof pageDictPermissed[url] == "string" && !userobj.isBocal())
-								return res.redirect("/panel/err?code=BAD_PERMS");
-								var url = req.originalUrl.replace(/\?.*$/g, "");
-								var reloc = pageDict[url] || pageDictPermissed[url];
-							fs.readFile(`${this.directory}${reloc}`, (err, data) => {
-								if (!err)
-								{
-									res.send(wrp.toString().replace("{{page}}", data.toString()
-										.replace(/\{\{\s*([^}]+)\s*\}\}/g, (m, s) => {
-											switch (s)
-											{
-												case "intra:role": return ("MENTOR");
-												case "intra:user": return (`${userobj.login}`);
-												case "intra:campus": return (`${userobj.campus.name}`);
-												default: return "";
-											}
-										})
-									));
-								}
-								else
-									res.status(500).send(`500 Internal Server Error: ${err.code}`);
-							});
-						}).catch((err) => {
-							res.redirect("/panel/err?code=BAD_AUTH");
-						});
+							else
+							{
+								if (lookup.reqPerms == 2)
+									res.redirect("/err?code=NOT_BOCAL");
+								else if (lookup.reqPerms == 1)
+									res.redirect("/err?code=NOT_MENTOR");
+							}
+						}
+						else
+							res.redirect("/login");
 					}
 					else
 					{
-						res.status(404).sendFile(`${this.directory}404.html`, (err) => {
-							if (err)
-								res.status(500).type("text/plain").send(`500 Internal Server ERR: ${err.code}`);
-						});
+						res.redirect("/login");
 					}
 				}
 				else
-					res.status().send(`500 Internal Server Error: ${err.code}`);
-			});
+				{
+					fs.readFile(`${this.directory}wrapper.html`, (err, wrp) => {
+						if (!err)
+						{
+							fs.readFile(`${this.directory}${lookup.file}`, (err, data) => {
+								if (err)
+									return res.status(500).type("text/plain").send(`500 Internal Server ERR: ${err.code}`)
+								res.status(200).send(wrp.toString().replace("{{page}}", data.toString().replace(/\{\{\s{0,}([^}]+)\s{0,}\}\}/g, (m, g) => {
+									switch (g)
+									{
+										case "intra:role": return "STUDENT";
+										case "intra:user": return "marvin";
+										case "intra:campus": return "Paris";
+										default: return "&nbsp;";
+									}
+								})));
+							});
+						}
+						else
+							res.status().send(`500 Internal Server Error: ${err.code}`);
+					});
+				}
+			}
+			else
+			{
+				res.status(404).sendFile(`${this.directory}404.html`, (err) => {
+					if (err)
+						res.status(500).type("text/plain").send(`500 Internal Server ERR: ${err.code}`);
+				});
+			}
 		});
 
 		try {

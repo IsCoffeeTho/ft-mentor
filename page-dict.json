@@ -1,6 +1,14 @@
 {
+	"reqPerms": 0,
 	"/": "init.html",
-	"/panel": "panel/index.html",
-	"/panel/resources": "panel/resources.html",
-	"/tool/test": "panel/test-tool.html"
+	"/panel": {
+		"reqPerms": 1,
+		"/": "panel/index.html",
+		"/resources": "panel/resources.html"
+	},
+	"/bocal": {
+		"reqPerms": 2,
+		"/": "panel/bocal/index.html",
+		"/manage": "panel/bocal/manage.html"
+	}
 }

@@ -108,6 +108,7 @@ button {
 	min-width: 100px;
 	padding: 10px;
 	transition: filter 0.1s;
+	text-transform: uppercase;
 }
 
 button:active {
