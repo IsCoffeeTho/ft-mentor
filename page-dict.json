@@ -28,6 +28,11 @@
 				"title": "Mental Health",
 				"src": "resources/mentoring/mentalhealth.md"
 			}
+		},
+		"/test" : {
+			"type": "document",
+			"title": "Markdown Test",
+			"src": "resources/test-doc.md"
 		}
 	}
 }

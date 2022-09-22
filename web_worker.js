@@ -1,4 +1,5 @@
 const hash = require("./hash");
+const markdown = require("./markdown.js");
 const internalAPI = require("./internalAPI.js");
 const pageDict = require("./page-dict.json");
 const axios = require('axios').default;
@@ -334,7 +335,6 @@ class web_worker extends EventEmitter
 						{
 							if (sesh.user.permission >= lookup.reqPerms)
 							{
-								console.log(lookup.type);
 								if (lookup.type == "document")
 								{
 									fs.readFile(`${this.directory}wrapper.html`, (err, wrp) => {
@@ -352,7 +352,8 @@ class web_worker extends EventEmitter
 																case "intra:role": return `${sesh.user.role.toUpperCase()}`;
 																case "intra:user": return `${sesh.user.login}`;
 																case "intra:campus": return `${sesh.user.campus.name}`;
-																case "document": return `${data.toString()}`;
+																case "title": return `${lookup.title}`;
+																case "document": return `${markdown(data.toString())}`;
 																default: return "&nbsp;";
 															}
 														})));
@@ -423,17 +424,17 @@ class web_worker extends EventEmitter
 										fs.readFile(`${this.directory}${lookup.file}`, (err, data) => {
 											if (err)
 												return res.status(500).type("text/plain").send(`500 Internal Server ERR: ${err.code}`)
-											res.status(200).send(wrp.toString().replace("{{page}}", scwrp.toString().replace(/\{\{\s{0,}([^}]+)\s{0,}\}\}/g, (m, g) => {
-												switch (g)
-												{
-													case "intra:role": return `STUDENT`;
-													case "intra:user": return `marvin`;
-													case "intra:campus": return `Paris`;
-													case "title": return `${lookup.title}`;
-													case "document": return `${data.toString()}`;
-													default: return "&nbsp;";
-												}
-											})));
+												res.status(200).send(wrp.toString().replace("{{page}}", scwrp.toString().replace(/\{\{\s{0,}([^}]+)\s{0,}\}\}/g, (m, g) => {
+													switch (g)
+													{
+														case "intra:role": return `STUDENT`;
+														case "intra:user": return `marvin`;
+														case "intra:campus": return `Paris`;
+														case "title": return `${lookup.title}`;
+														case "document": return `${markdown(data.toString())}`;
+														default: return "&nbsp;";
+													}
+												})));
 										});
 									}
 									else

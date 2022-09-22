@@ -320,3 +320,20 @@ dropdown>options>option[checked] {
 	background-color : var(--theme-sec);
 	color : var(--theme-light);
 }
+
+pre {
+	background-color : #000;
+	color : #5f5;
+	padding : 10px;
+	font-family : monospace;
+	font-size : 0.8em;
+	font-weight : bold;
+	overflow-x: auto;
+}
+
+c {
+	padding-inline : 5px;
+	font-family : monospace;
+	font-size : 0.8em;
+	font-weight : bold;
+}
