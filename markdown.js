@@ -1,3 +1,14 @@
+/* 
+
+	This file is not to be looked at by the faint of heart,
+  		if you still have an ounce of sanity turn away while you still can!!!
+
+	 - Aaron Menadue
+
+*/
+
+
+/** Translates the raw data put in, into the HTML formatted by the markdown syntax */
 function md(data)
 {
 	return (`<p>${mdpreform(data)}</p>`.replace(/<p>\s*<\/p>/g, ""));
@@ -8,19 +19,25 @@ function mdpreform(data)
 	.replace(/</gim, "&lt;")
 	.replace(/\>/gim, "&gt;")
 
+	.replace(/^---+$/gim, '</p><hr /><p>')
+
+	/* #### THIS SECTION NEEDS A RE-WRITE #### */
+
 	//unorded lists
-	.replace(/((^|\n)( {0,1}([*+-]) .+)(\n  .*)*)((^|\n)( {0,1}\4 .+)(\n  .*)*)*/g, "</p><ul>$&\n</ul><p>")
-	.replace(/(^|\n) {0,1}[*+-]( +|\t)((.*)(\n\2.*)+)/gi, function(m, nl, nl1, t) {
+	.replace(/((^|\n)[+*-](( |\t){1,})(.+(\n[^-+*\n][^\n]+)*))+/g, "</p><ul>$&\n</ul><p>") // Doesn't capture multiple paragraphs
+	.replace(/(^|\n)[+*-](( |\t){1,})(.+(\n[^-+*\n][^\n]+)*)/gi, function(m, nl, sc, s, t) {
 		return `<li>${md(t.replace(/(^|\n)(  )+/g, "$1")).replace(/(<\/p>|<p>)/g, "")}</li>`;
 	})
 	.replace(/(^|\n) {0,1}[*+-]( +|\t)(.*)/g, "$1<li>$3</li>")
 
 	//orded lists
 	.replace(/((^|\n)( {0,1}(\d+)\. .+)(\n  .*)*)((^|\n)( {0,1}(\d+\.) .+)(\n  .*)*)*/g, '</p><ol start="$4">$&\n</ol><p>')
-	.replace(/(^|\n) {0,1}(\d+\.)( +|\t)((.*)(\n\3.*)+)/gi, function(m, nl, nl1, nl2, t) {
+	.replace(/(^|\n) {0,1}(\d+\.)( +|\t)(.*)(\n(    |\t)(.+\n)*)*/gi, function(m, nl, nl1, nl2, t) {
 		return `<li>${md(t.replace(/(^|\n)( {2,})/g, "$1")).replace(/(<\/p>|<p>)/g, "")}</li>`;
 	})
 	.replace(/(^|\n) {0,1}(\d+\.)( +|\t)(.*)/g, "$1<li>$4</li>")
+
+	/* #### END SECTION #### */
 	
 	//codeblocks
 	.replace(/(^|\n)```(.*)\n((.*\n)+)```(\n|$)/g, function(m, nl, lang, t) {
@@ -31,7 +48,7 @@ function mdpreform(data)
 
 	//quote blocks
 	.replace(/(^|\n)((&gt; [^\n]*\n)(&gt;\s*\n|[^\n]+\n|&gt; [^\n]*\n)*)/gi, function(m, nl, t) {
-		return `</p><mdqb>${md(t.replace(/(^|\n)&gt; {0,1}/g, "\n"))}</mdqb><p>`;
+		return `</p><mdqb>${md(t.replace(/(^|\n)&gt; {0,1}/g, "$1"))}</mdqb><p>`;
 	})
 
 	// Tables
@@ -114,12 +131,11 @@ function mdpreform(data)
 	//headers
 	.replace(/^(#{1,6}) (.*$)/gim, function(m, s, h) {return `</p><h${s.length} id="${h.toLowerCase().replace(/[^\w ]/g, "").replace(/ /g, "-")}">${h}</h${s.length}><p>`})
 	.replace(/(^|\n)(.+)\n----\n/gi, '</p><h2>$2</h2><p>')
-	.replace(/^---+$/gim, '</p><hr /><p>')
 
 	// tabbed code
 	.replace(/(^|\n)((( {4}|\t)[^\n]+\n)+)/g, function(m, nl, t) {
 		return `</p><pre>${t
-			.replace(/(^|\n)( {4}|\t)/g, (m,g) => {return g;})
+			.replace(/(^|\n)( {4}|\t)/g, (m, g) => {return g;})
 			.replace(/\n/g, "<br>")
 		}</pre><p>`;
 	})

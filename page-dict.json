@@ -12,10 +12,14 @@
 		"/manage": "panel/bocal/manage.html"
 	},
 	"/roster":{
-		"reqPerms": 2,
-		"/add": "panel/bocal/studentselect.html"
+		"reqPerms": 1,
+		"/add": {
+			"reqPerms": 2,
+			"/":"panel/bocal/studentselect.html"
+		}
 	},
 	"/resources" : {
+		"reqPerms": 1,
 		"type": "document",
 		"title": "Resources",
 		"src": "resources/dir.md",
@@ -30,6 +34,7 @@
 			}
 		},
 		"/test" : {
+			"reqPerms" : 0,
 			"type": "document",
 			"title": "Markdown Test",
 			"src": "resources/test-doc.md"

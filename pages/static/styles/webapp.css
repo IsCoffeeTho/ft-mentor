@@ -109,7 +109,7 @@ div[fullscreen] {
 	flex-direction : column;
 }
 
-#segment>* {
+#segment>span {
 	display : flex;
 	flex-direction : row;
 	align-items: center;

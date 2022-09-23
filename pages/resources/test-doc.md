@@ -22,7 +22,7 @@
 
 
 **Note:** This document is itself written using Markdown; you
-can [see the source for it by adding '.text' to the URL](/projects/markdown/syntax.text).
+can [see the source on github](https://raw.githubusercontent.com/mxstbr/markdown-test-file/master/TEST.md).
 
 ----
 
